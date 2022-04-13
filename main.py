@@ -18,15 +18,17 @@ if not os.path.exists(path):
     print('NO ENV FILE FOUND')
     key = input("Enter your API key:")
     portfolio = input("Enter your stock symbols seperated by commas: ")
-    SYMBOLS = portfolio.split(',')
+    PORTFOLIO = portfolio.split(',')
+    watchlist = input("Enter your stock symbols to watch: ")
+    WATCHLIST = portfolio.split(',')
     API_KEY = f'{key}'
     with open('.env', 'w') as f:
-        f.write(f'API_KEY="{API_KEY}"\nSYMBOLS="{SYMBOLS}"')
+        f.write(f'API_KEY="{API_KEY}"\nPORTFOLIO="{PORTFOLIO}"\nWATCHLIST="{WATCHLIST}"')
 
 # load env file
 load_dotenv(dotenv_path=dotenv_path)
 API_KEY = os.getenv('API_KEY')
-SYMBOLS = json.loads(os.getenv('SYMBOLS'))
+PORTFOLIO = json.loads(os.getenv('PORTFOLIO'))
 
 
 class Quote:
@@ -90,7 +92,7 @@ class Quote:
             print(colored(f'{self.change} | {self.pct_change}%', 'green'))
         elif float(self.change) < 0:
             print(colored(f'{self.change} | {self.pct_change}%', 'red'))
-        elif int(self.change) == 0:
+        elif float(self.change) == 0:
             print(f'{self.change} | {self.pct_change}%')
 
     def show_quote(self):
@@ -110,6 +112,17 @@ class Quote:
 def build_request_url(function, symbol):
     return f'https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={API_KEY}'
 
+def print_company_name(symbol):
+    url = build_request_url('OVERVIEW', symbol)
+    r = requests.get(url)
+    data = r.json()
+    try:
+        print('---------------------------')
+        print(data['Name'])
+        print(data['Industry'])
+    except KeyError:
+        print(data)
+
 
 def get_stock_quote(stock_symbol):
     function = "GLOBAL_QUOTE"
@@ -128,12 +141,18 @@ def get_stock_quote(stock_symbol):
 def main():
     keep_running = True
     while keep_running:
-        inp = input("Enter a stock symbol, type 'report' to generate a portfolio report or type 'quit' to quit: ")
-        if inp.lower() == 'quit':
+        inp = input("Enter a stock symbol or type help for more options:")
+        if inp.lower() == 'help':
+            print('''
+            'report' to generate portfolio report
+            'watchlist' to generate a watchlist report
+            'quit' to quit
+            ''')
+        elif inp.lower() == 'quit':
             keep_running = False
             continue
         elif inp.lower() == 'report':
-            symbols = SYMBOLS
+            symbols = PORTFOLIO
             with open('report.txt', 'w') as file:
                 file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
             for symbol in symbols:
@@ -143,8 +162,20 @@ def main():
                     file.write(quote.report() + '\n')
                 time.sleep(12)  # using this api for free you can only make 5 calls/min
             print("Portfolio Report Completed")
+        elif inp.lower() == 'watchlist':
+            symbols = WATCHLIST
+            with open('report.txt', 'w') as file:
+                file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
+            for symbol in symbols:
+                quote = get_stock_quote(symbol)
+                print(quote.report())
+                with open('watchlist.txt', 'a') as file:
+                    file.write(quote.report() + '\n')
+                time.sleep(12)  # using this api for free you can only make 5 calls/min
+            print("Watchlist Report Completed")
         else:
             quote = get_stock_quote(inp.upper())
+            print_company_name(inp.upper())
             quote.show_quote()
 
 
