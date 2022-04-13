@@ -38,12 +38,31 @@ class Quote:
         self.raw_data = data
 
     def __str__(self):
-        return f"{self.symbol} -\nOpen: {self.open}, High: {self.high}, Low: {self.low}, Price: {self.price}, Volume: {self.volume}, Change: {self.change}, Change %: {self.pct_change}"
+        return f"{self.symbol} - Open: {self.open}, High: {self.high}, Low: {self.low}, Price: {self.price}, Volume: {self.volume}, Change: {self.change}, Change %: {self.pct_change}"
 
     def json(self):
         print(self.raw_data)
         pass
 
+    def calculate_daily_change(self):
+        change = float(self.price) - float(self.open)
+        return str(round(change, 4))
+
+    def calculate_daily_change_percent(self):
+        change = float(self.price) - float(self.open)
+        open = float(self.open)
+        pct = change/open * 100
+        return str(round(pct, 4))
+
+    def report(self):
+        return f'''
+        {self.symbol} | ${self.price}
+        Open: ${self.open}
+        Last Price Change: {self.change} | {self.pct_change}
+        Price Change Since Open: {self.calculate_daily_change()} | {self.calculate_daily_change_percent()}%
+        Range: ${self.low} -> ${self.high}
+        Volume: {self.volume} trades.
+        '''
 
 def build_request_url(function, symbol):
     return f'https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={API_KEY}'
@@ -72,11 +91,11 @@ def main():
             symbols =  SYMBOLS
             for symbol in symbols:
                 quote = get_stock_quote(symbol)
-                print(quote)
+                print(quote.report())
                 time.sleep(12) # using this api for free you can only make 5 calls/min
         else:
             quote = get_stock_quote(inp)
-            print(quote)
+            print(quote.report())
 
 if __name__ == "__main__":
     main()
