@@ -5,15 +5,11 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 
-# replace the "demo" apikey below with your own key from https://www.alphavantage.co/support/#api-key
-#url = 'https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=AMD&apikey=6JB9IQF5O1H5SVDP'
-
 #setup environment file
 env_file = '.env'
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 path = ROOT_DIR + '/' + env_file
 dotenv_path = Path(path)
-
 if not os.path.exists(path):
     print('NO ENV FILE FOUND')
     key = input("Enter your API key:")
@@ -23,9 +19,11 @@ if not os.path.exists(path):
     with open('.env', 'w') as f:
         f.write(f'API_KEY="{API_KEY}"\nSYMBOLS="{SYMBOLS}"')
 
+#load env file
 load_dotenv(dotenv_path=dotenv_path)
 API_KEY = os.getenv('API_KEY')
 SYMBOLS = json.loads(os.getenv('SYMBOLS'))
+
 
 class Quote:
     def __init__(self, data):
