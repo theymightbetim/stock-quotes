@@ -6,7 +6,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
 
-#setup environment file
+# setup environment file
 env_file = '.env'
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 path = ROOT_DIR + '/' + env_file
@@ -20,7 +20,7 @@ if not os.path.exists(path):
     with open('.env', 'w') as f:
         f.write(f'API_KEY="{API_KEY}"\nSYMBOLS="{SYMBOLS}"')
 
-#load env file
+# load env file
 load_dotenv(dotenv_path=dotenv_path)
 API_KEY = os.getenv('API_KEY')
 SYMBOLS = json.loads(os.getenv('SYMBOLS'))
@@ -39,7 +39,8 @@ class Quote:
         self.raw_data = data
 
     def __str__(self):
-        return f"{self.symbol} - Open: {self.open}, High: {self.high}, Low: {self.low}, Price: {self.price}, Volume: {self.volume}, Change: {self.change}, Change %: {self.pct_change}"
+        return f"{self.symbol} - Open: {self.open}, High: {self.high}, Low: {self.low}, Price: {self.price}, " \
+               f"Volume: {self.volume}, Change: {self.change}, Change %: {self.pct_change}"
 
     def json(self):
         print(self.raw_data)
@@ -51,8 +52,8 @@ class Quote:
 
     def calculate_daily_change_percent(self):
         change = float(self.price) - float(self.open)
-        open = float(self.open)
-        pct = change/open * 100
+        day_open = float(self.open)
+        pct = change / day_open * 100
         return str(round(pct, 4))
 
     def report(self):
@@ -65,8 +66,10 @@ class Quote:
         Volume: {self.volume} trades.
         '''
 
+
 def build_request_url(function, symbol):
     return f'https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={API_KEY}'
+
 
 def get_stock_quote(stock_symbol):
     function = "GLOBAL_QUOTE"
@@ -81,15 +84,16 @@ def get_stock_quote(stock_symbol):
         quote = r.text
     return quote
 
+
 def main():
     keep_running = True
-    while(keep_running):
+    while keep_running:
         inp = input("Enter a stock symbol, type 'report' to generate a portfolio report or type 'quit' to quit: ")
         if inp.lower() == 'quit':
             keep_running = False
             continue
         elif inp.lower() == 'report':
-            symbols =  SYMBOLS
+            symbols = SYMBOLS
             with open('report.txt', 'w') as file:
                 file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
             for symbol in symbols:
@@ -97,17 +101,11 @@ def main():
                 print(quote.report())
                 with open('report.txt', 'a') as file:
                     file.write(quote.report() + '\n')
-                time.sleep(12) # using this api for free you can only make 5 calls/min
+                time.sleep(12)  # using this api for free you can only make 5 calls/min
         else:
             quote = get_stock_quote(inp)
             print(quote.report())
 
+
 if __name__ == "__main__":
     main()
-
-
-#function = "TIME_SERIES_MONTHLY"
-
-
-
-
