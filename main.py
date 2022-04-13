@@ -141,17 +141,18 @@ def get_stock_quote(stock_symbol):
 def main():
     keep_running = True
     while keep_running:
-        inp = input("Enter a stock symbol or type help for more options:")
-        if inp.lower() == 'help':
+        inp = input("Enter a stock symbol or type menu for more options:")
+        if inp.lower() == 'menu':
             print('''
-            'report' to generate portfolio report
-            'watchlist' to generate a watchlist report
-            'quit' to quit
+            1. Enter a stock symbol to generate a quote
+            2. Type 'report' to generate portfolio report
+            3. Type 'watchlist' to generate a watchlist report
+            4. Type 'quit' to quit
             ''')
-        elif inp.lower() == 'quit':
+        elif inp.lower() == 'quit' or inp == '4':
             keep_running = False
             continue
-        elif inp.lower() == 'report':
+        elif inp.lower() == 'report' or inp == '2':
             symbols = PORTFOLIO
             with open('report.txt', 'w') as file:
                 file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
@@ -162,7 +163,7 @@ def main():
                     file.write(quote.report() + '\n')
                 time.sleep(12)  # using this api for free you can only make 5 calls/min
             print("Portfolio Report Completed")
-        elif inp.lower() == 'watchlist':
+        elif inp.lower() == 'watchlist' or inp == '3':
             symbols = WATCHLIST
             with open('report.txt', 'w') as file:
                 file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
