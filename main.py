@@ -4,6 +4,7 @@ import os
 import json
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import datetime
 
 #setup environment file
 env_file = '.env'
@@ -83,15 +84,19 @@ def get_stock_quote(stock_symbol):
 def main():
     keep_running = True
     while(keep_running):
-        inp = input("Enter a stock symbol or type 'quit' to quit:")
+        inp = input("Enter a stock symbol, type 'report' to generate a portfolio report or type 'quit' to quit: ")
         if inp.lower() == 'quit':
             keep_running = False
             continue
         elif inp.lower() == 'report':
             symbols =  SYMBOLS
+            with open('report.txt', 'w') as file:
+                file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
             for symbol in symbols:
                 quote = get_stock_quote(symbol)
                 print(quote.report())
+                with open('report.txt', 'a') as file:
+                    file.write(quote.report() + '\n')
                 time.sleep(12) # using this api for free you can only make 5 calls/min
         else:
             quote = get_stock_quote(inp)
