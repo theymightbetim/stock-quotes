@@ -54,13 +54,13 @@ def get_stock_quote(stock_symbol):
     function = "GLOBAL_QUOTE"
     url = build_request_url(function, stock_symbol)
     r = requests.get(url)
-    if r.json()['Global Quote']:
-        try:
+    try:
+        if r.json()['Global Quote']:
             quote = Quote(r.json()['Global Quote'])
-        except KeyError:
-            print(r.text)
-    else:
-        quote = f"Could Not Get Quote for {stock_symbol}."
+        else:
+            quote = f"Could Not Get Quote for {stock_symbol}."
+    except KeyError:
+        quote = r.text
     return quote
 
 def main():
