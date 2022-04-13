@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
+from termcolor import colored
 
 # setup environment file
 env_file = '.env'
@@ -60,12 +61,49 @@ class Quote:
         return f'''
         {self.symbol} | ${self.price}
         Open: ${self.open}
-        Last Price Change: {self.change} | {self.pct_change}
         Price Change Since Open: {self.calculate_daily_change()} | {self.calculate_daily_change_percent()}%
+        Last Price Change: {self.change} | {self.pct_change}
         Range: ${self.low} -> ${self.high}
         Volume: {self.volume} trades.
         '''
 
+    def print_daily_change_in_price(self):
+        if self.price > self.open:
+            print(colored(f'{self.calculate_daily_change()} | {self.calculate_daily_change_percent()}%', 'green'))
+        elif self.price < self.open:
+            print(colored(f'{self.calculate_daily_change()} | {self.calculate_daily_change_percent()}%', 'red'))
+        elif self.price == self.open:
+            print(f'{self.calculate_daily_change()} | {self.calculate_daily_change_percent()}%')
+
+    def print_stock_price(self):
+        if self.price > self.open:
+            print(colored(f'${self.price}', 'green'))
+        elif self.price < self.open:
+            print(colored(f'${self.price}', 'red'))
+        elif self.price == self.open:
+            print(f'${self.price}')
+
+    def print_last_change(self):
+        if float(self.change) > 0:
+            print(colored(f'{self.change} | {self.pct_change}%', 'green'))
+        elif float(self.change) < 0:
+            print(colored(f'{self.change} | {self.pct_change}%', 'red'))
+        elif int(self.change) == 0:
+            print(f'{self.change} | {self.pct_change}%')
+
+    def show_quote(self):
+        print('---------------------------')
+        print(f'{self.symbol} |  ',end="")
+        self.print_stock_price()
+        print('Last', end=" ")
+        self.print_last_change()
+        print('Day:',end=" ")
+        self.print_daily_change_in_price()
+        print('---------------------------')
+        print(f'Open: ${self.open}')
+        print(f'Range: ${self.low} -> ${self.high}')
+        print(f'Volume: {self.volume} trades.')
+        print('---------------------------')
 
 def build_request_url(function, symbol):
     return f'https://www.alphavantage.co/query?function={function}&symbol={symbol}&apikey={API_KEY}'
@@ -102,9 +140,10 @@ def main():
                 with open('report.txt', 'a') as file:
                     file.write(quote.report() + '\n')
                 time.sleep(12)  # using this api for free you can only make 5 calls/min
+            print("Portfolio Report Completed")
         else:
-            quote = get_stock_quote(inp)
-            print(quote.report())
+            quote = get_stock_quote(inp.upper())
+            quote.show_quote()
 
 
 if __name__ == "__main__":
