@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-import requests
-import time
-import os
-import json
+from requests import get
+from os import path, getenv
+from json import loads
+from time import sleep
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import datetime
@@ -11,10 +11,10 @@ from termcolor import colored
 
 # setup environment file
 env_file = '.env'
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-path = ROOT_DIR + '/' + env_file
-dotenv_path = Path(path)
-if not os.path.exists(path):
+ROOT_DIR = path.dirname(path.abspath(__file__))
+env_path = ROOT_DIR + '/' + env_file
+dotenv_path = Path(env_path)
+if not path.exists(env_path):
     print('NO ENV FILE FOUND')
     key = input("Enter your API key:")
     portfolio = input("Enter your stock symbols seperated by commas: ")
@@ -27,8 +27,9 @@ if not os.path.exists(path):
 
 # load env file
 load_dotenv(dotenv_path=dotenv_path)
-API_KEY = os.getenv('API_KEY')
-PORTFOLIO = json.loads(os.getenv('PORTFOLIO'))
+API_KEY = getenv('API_KEY')
+PORTFOLIO = loads(getenv('PORTFOLIO'))
+WATCHLIST = loads(getenv('WATCHLIST'))
 
 
 class Quote:
@@ -114,7 +115,7 @@ def build_request_url(function, symbol):
 
 def print_company_name(symbol):
     url = build_request_url('OVERVIEW', symbol)
-    r = requests.get(url)
+    r = get(url)
     data = r.json()
     try:
         print('---------------------------')
@@ -127,7 +128,7 @@ def print_company_name(symbol):
 def get_stock_quote(stock_symbol):
     function = "GLOBAL_QUOTE"
     url = build_request_url(function, stock_symbol)
-    r = requests.get(url)
+    r = get(url)
     try:
         if r.json()['Global Quote']:
             quote = Quote(r.json()['Global Quote'])
@@ -154,25 +155,25 @@ def main():
             continue
         elif inp.lower() == 'report' or inp == '2':
             symbols = PORTFOLIO
-            with open('report.txt', 'w') as file:
+            with open(f'{ROOT_DIR}/reports/portfolio-{datetime.now().strftime("%Y-%m-%d")}.txt', 'w') as file:
                 file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
             for symbol in symbols:
                 quote = get_stock_quote(symbol)
                 print(quote.report())
-                with open('report.txt', 'a') as file:
+                with open(f'{ROOT_DIR}/reports/portfolio-{datetime.now().strftime("%Y-%m-%d")}.txt', 'a') as file:
                     file.write(quote.report() + '\n')
-                time.sleep(12)  # using this api for free you can only make 5 calls/min
+                sleep(12)  # using this api for free you can only make 5 calls/min
             print("Portfolio Report Completed")
         elif inp.lower() == 'watchlist' or inp == '3':
             symbols = WATCHLIST
-            with open('report.txt', 'w') as file:
+            with open(f'{ROOT_DIR}/reports/watchlist-{datetime.now().strftime("%Y-%m-%d")}.txt', 'w') as file:
                 file.write(f'Report for {datetime.now().strftime("%Y-%m-%d %H:%M:%S")}\n')
             for symbol in symbols:
                 quote = get_stock_quote(symbol)
                 print(quote.report())
-                with open('watchlist.txt', 'a') as file:
+                with open(f'{ROOT_DIR}/reports/watchlist-{datetime.now().strftime("%Y-%m-%d")}.txt', 'a') as file:
                     file.write(quote.report() + '\n')
-                time.sleep(12)  # using this api for free you can only make 5 calls/min
+                sleep(12)  # using this api for free you can only make 5 calls/min
             print("Watchlist Report Completed")
         else:
             quote = get_stock_quote(inp.upper())
